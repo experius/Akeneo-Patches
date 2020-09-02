@@ -1,0 +1,40 @@
+diff --git a/src/Akeneo/Pim/Enrichment/Component/Product/Validator/Constraints/FileValidator.php b/src/Akeneo/Pim/Enrichment/Component/Product/Validator/Constraints/FileValidator.php
+index d20ead9..52ec3c7 100644
+--- a/src/Akeneo/Pim/Enrichment/Component/Product/Validator/Constraints/FileValidator.php
++++ b/src/Akeneo/Pim/Enrichment/Component/Product/Validator/Constraints/FileValidator.php
+@@ -42,20 +42,35 @@ class FileValidator extends ConstraintValidator
+     public function validate($value, Constraint $constraint)
+     {
+         if (!$constraint instanceof File) {
+             throw new UnexpectedTypeException($constraint, File::class);
+         }
+ 
+         if ($value instanceof FileInfoInterface && (null !== $value->getId() || null !== $value->getUploadedFile())) {
+             $this->validateFileSize($value, $constraint);
+             $this->validateFileExtension($value, $constraint);
+             $this->validateMimeType($value, $constraint);
++            $this->validateFilenameLength($value);
++        }
++    }
++
++    /**
++     * Validate if the filename is max 90 chars for Magento 2
++     *
++     * @param FileInfoInterface $fileInfo   The file that should be validated
++     */
++    protected function validateFilenameLength(FileInfoInterface $fileInfo)
++    {
++        if (strlen($fileInfo->getOriginalFilename()) > 90) {
++            $this->context->buildViolation(
++                'Filename is to long'
++            )->addViolation();
+         }
+     }
+ 
+     /**
+      * Validate if extension is allowed.
+      *
+      * @param FileInfoInterface $fileInfo   The file that should be validated
+      * @param File              $constraint The constraint for the validation
+      */
+     protected function validateFileExtension(FileInfoInterface $fileInfo, File $constraint)
